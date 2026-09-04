@@ -1,0 +1,18 @@
+{
+  "name": "agent-flow",
+  "owner": { "name": "wiasliaw", "email": "wiasliaw@protonmail.com" },
+  "description": "Marketplace for the agent-flow plugin (this repository is the plugin)",
+  "plugins": [
+    {
+      "name": "agent-flow",
+      "source": "./",
+      "description": "Composable spec-driven development workflow with independent quality loops",
+      "version": "0.1.0",
+      "author": { "name": "wiasliaw" },
+      "repository": "https://github.com/wiasliaw/agent-flow",
+      "license": "MIT",
+      "category": "workflow",
+      "tags": ["sdd", "workflow", "quality-loop"]
+    }
+  ]
+}
