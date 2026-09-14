@@ -6,13 +6,11 @@
     {
       "name": "agent-flow",
       "source": "./",
-      "description": "Composable spec-driven development workflow with independent quality loops",
+      "description": "Waterfall spec-driven development workflow with automatic fallback and independent quality loops",
       "version": "0.1.0",
       "author": { "name": "wiasliaw" },
       "repository": "https://github.com/wiasliaw/agent-flow",
-      "license": "MIT",
-      "category": "workflow",
-      "tags": ["sdd", "workflow", "quality-loop"]
+      "license": "MIT"
     }
   ]
 }
