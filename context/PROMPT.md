@@ -1,28 +1,42 @@
 # PROMPT：在空 repo 建立 agent-flow 的第一個 prompt
 
 把下面整段貼給 Claude Code。它不內嵌任何設計決策 — 決策在訪談時由你給出。
-這個 prompt 只固定三件事：產品構想（phase 與其一句話定義）、工作流程
-（研究 → 訪談 → 設計 → 對齊 → 實作），以及「不得替你做決定」這條紅線。
+這個 prompt 只固定三件事：產品構想（phase 與其一句話定義、skill 撰寫的 DSL
+術語表模式）、工作流程（研究 → 訪談 → 設計 → 對齊 → 實作），以及「不得替你
+做決定」這條紅線。
 
 ---
 
 我要建立一個 Claude Code plugin，名稱 agent-flow：把規格驅動開發（Spec-Driven Development, SDD）
-與測試驅動開發（Test-Driven Development, TDD）結合成可組合的工作流程，八個 phase：
+與測試驅動開發（Test-Driven Development, TDD）結合成 waterfall 工作流程，七個 phase
+（其中一個 optional）：
 
-- **Discuss**：以蘇格拉底提問訪問談話者，確認使用者意圖。
-- **Explore**：內外並查，確認實作可行性。
-- **Prototype**：用丟棄式程式碼做實驗回答技術疑問，留下問題、做法與證據；程式碼不進正式產品。
+- **Explore**：以蘇格拉底提問釐清使用者意圖，同時內外並查、確認實作可行性。
+- **Prototype**（optional）：Explore 留下未解決技術疑問時才觸發；用丟棄式程式碼做實驗
+  回答疑問，留下問題、做法與證據；程式碼不進正式產品。
 - **Spec**：撰寫 SDD 規格。
-- **Ticket**：切出可驗證票證；以 TDD 在這個階段製作可驗證的測試。
-- **Dev**：以 subagent 或 worktree 平行執行票證。
+- **TDD**：根據規格切出可驗證票證，並定義 TDD 測試規格——每張票證附可執行的紅燈測試。
+- **Build**：以 subagent 或 worktree 平行執行票證。
 - **Review**：對照規格與票證，對整個工作單位做整體審查，列出缺口與問題。
 - **Wrap**：全自動收尾，合併與清理不留人工步驟。
 
-規格驅動整個流程；測試先於實作，在 Ticket 階段隨票證產出。
-每個 phase 結束時由獨立於作者的角色跑一次品質檢查迴圈。
+規格驅動整個流程；測試先於實作，在 TDD 階段隨票證產出。
+每個 phase 結束時由獨立於作者的角色跑一次品質檢查迴圈；流程採 waterfall 模式——
+審查判定問題根因在較早的階段時，自動退回該階段重做，重做後依序重走下游階段，
+被撤銷的承諾點須重新核准。品質迴圈與自動退回都有明確的次數上限，超限不自行變通，
+一律停下來上報、把決定權交還給我。
 整個引擎以多 agent 協作（agent orchestration）運作：主 session 作為 orchestrator，
-只負責調度、決策與記錄；撰寫與檢查這類實際工作派給不同的子 agent 分工執行，
-盡量把長時間的工作推出主 session。
+只負責調度、決策與記錄；實際工作派給少數 general-purpose 子 agent（作者／審查
+兩種角色）分工執行——不為每個步驟設專屬 agent，角色差異由派工時的角色簡報與
+指定的參考文件表達，盡量把長時間的工作推出主 session。
+
+Skill 分兩層：使用者可觸發的 external skill，與不屬於 skill 的內部參考文件
+（internal reference，純 markdown，派工時指名載入）。Skill 的程序段落以 pseudo-code
+DSL 撰寫，不用長篇散文：把 dispatch／gate／fallback／escalate 這類動詞、共用變數與
+共用程序收斂成一份術語表（glossary）reference 文件，跨 phase 的硬性規則編成帶編號的
+不變量清單（INV-n）集中定義、各處引用；散文只保留使用者可見文案、產物格式與設計理由。
+主 session 執行任何 external skill 前先載入術語表；找不到適用分支時停下來問，
+不自行發明路由。
 
 這個 repo 是空的。不要直接開始設計。照下面的順序工作，每一步做完停下來等我確認再進下一步：
 

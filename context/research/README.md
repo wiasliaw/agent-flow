@@ -17,6 +17,11 @@ agent 在 /tmp 沙箱以便宜模型（Haiku）headless 實測（05–06）。�
 | `06-experiments-hooks-worktree.md` | 實測：SubagentStop 閘門身分、hook matcher 語法、headless 平行 worktree、isolation: worktree 生命週期、無人值守權限行為、Dynamic Workflow 觸發限制 | /tmp 實驗（產物留在 `/tmp/agent-flow-exp-hooks/`） |
 | `07-experiments-dev-loop.md` | 實測（設計稽核後補做）：SendMessage 續談 worktree 子代理、worktree 分岔基準 | 本 session 內＋/tmp 實驗（worktree 已清理） |
 | `08-baseref-persistence.md` | 查證（規格對齊時補做）：worktree.baseRef 證實為可持久化的 settings.json 欄位（{"worktree": {"baseRef": "head"}}，Scope: Any file）；spec 疑似設計矛盾不成立 | 官方文件（worktrees 頁＋settings-reference 頁） |
+| `09-dsl-glossary-pattern.md` | 改進研究（實作完成後補做，G1–G3）：skill 撰寫的 pseudo-code DSL 術語表模式——問題診斷、四構件模式、internal skill 自足性取捨、行數量測、per-directory validate 行為變化實測 | 本 repo 內部分析＋本機 CLI 實測（2.1.259） |
+| `10-validate-targets.md` | 查證（R7 前置）：`claude plugin validate` 如何解析目標路徑、遞迴範圍到哪裡——`validate .` 在雙 manifest 下只驗 marketplace；指向 `plugin.json` 會遞迴驗證所有 skill／agent（推翻 05 實驗五）；目錄驗證取決於 basename | /tmp 沙箱實驗（產物留在 `/tmp/af-validate-exp/`） |
+| `11-agent-namespace-and-builtins.md` | 查證（R11 前置）：plugin agent 命名空間的實際保護力——同名專案 agent 與 plugin agent **並存不覆蓋**（推翻 `spec/01` §2.4 的撞名風險敘述）；`disallowedTools` 在工具層真有強制力；內建 `general-purpose`／`Explore` 無法取代自訂 `agents/` 的兩項工具層保證 | /tmp 沙箱實驗（已清理） |
+| `12-worktree-baseref-with-remote.md` | 查證：有 remote 情境下 `worktree.baseRef` 是否必要——**是**【證實】。無設定時 worktree 分岔自遠端預設分支、拿不到單位分支 commit；設 `head` 後分岔自單位分支 tip。結案 research 07 Test B 的附條件與 08 的懸留 | /tmp 沙箱實驗（帶真實 remote，已清理） |
+| `13-manual-worktree.md` | 查證（R12 前置）：改由主 session 自建 worktree 是否可行——可行【證實】。平行子代理 `cd` 進指定 worktree 互不干擾、合併清理正常；擺放位置三案實測（`.git/` 底下 Write 被權限擋下不可用；採 `.agent-flow/.gitignore` 自帶 ignore，不碰專案設定）；連帶 INV-3 放寬 | /tmp 沙箱實驗（帶真實 remote，已清理） |
 
 ## 對設計影響最大的裁決
 
@@ -48,7 +53,7 @@ agent 在 /tmp 沙箱以便宜模型（Haiku）headless 實測（05–06）。�
    session，不回發起續談的中介子代理 — 續談必須由主 session 親自發起。
 9. **worktree 分岔基準跟隨當下 checkout**（【證實，附條件】，無 remote 的
    local repo 下）：Dev 建 worktree 前 orchestrator 必須 checkout 到單位分支
-   並明確設 baseRef: head，不能依賴預設。有 remote 情境未測。
+   並明確設 baseRef: head，不能依賴預設。**有 remote 情境已由 12 補測結案**（research 12【證實】：預設 "fresh" 會改從遠端預設分支分出，該設定為必要）。
 
 ## 實驗推翻或修正文件的紀錄
 

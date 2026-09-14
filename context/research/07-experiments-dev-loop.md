@@ -143,7 +143,7 @@ cc60e7e commit A
 ```
 `research/02-orchestration.md` §4.4 記載官方預設 `worktree.baseRef` 是 `"fresh"`：「從遠端預設分支（通常是 main）分出」。本測試 repo 沒有遠端，因此無法排除「`fresh` 在沒有 remote 可用時，退回到目前 local HEAD（= 當下 checkout 的分支）」這個替代解釋，與「`baseRef` 本身的真正語意就是『當下 checkout』」是兩種不同的机制成因，但**外部可觀察行為相同**。`research/06-experiments-hooks-worktree.md` §3 的既有實驗（兩個平行 headless session，皆基於同一台 repo 的 `main` HEAD 分岔）與本次結果互相佐證：在沒有 remote 的本機 repo 情境下，worktree 分岔點穩定跟隨「發起當下的本地 checkout」。
 
-**結論【證實，附條件】**：在**沒有設定 remote 的 local repo**（agent-flow 若在 CI 或本機開發環境下對尚未 push 的 spec/ticket 分支跑 Dev phase worktree，很可能正是這種情境）下，worktree 的分岔基準確實跟隨「orchestrator 發起 session 當下 checkout 的分支」，不是固定分岔自某個叫 `main` 的分支名稔。**未能測出**：有 remote 且 `origin/main` 存在時，預設 `baseRef: "fresh"` 是否仍然優先用「remote 預設分支」而非「當下 checkout」——若 agent-flow 的實際部署環境有 remote，此結論需要另外驗證是否成立；若 Dev phase 要確保「多張票證共同基於同一個未 push 的 Spec/Ticket 分支」，依 `research/02` §4.4 官方建議應明確設定 `worktree.baseRef: "head"`（而非依賴預設 `"fresh"` 在 remote 存在時的行為），這條建議在本次實測後**更為必要**，不能只靠「不設定、指望它自動抓到當下分支」。
+**結論【證實，附條件】**：在**沒有設定 remote 的 local repo**（agent-flow 若在 CI 或本機開發環境下對尚未 push 的 spec/ticket 分支跑 Dev phase worktree，很可能正是這種情境）下，worktree 的分岔基準確實跟隨「orchestrator 發起 session 當下 checkout 的分支」，不是固定分岔自某個叫 `main` 的分支名稔。**已補測（`research/12`，2026-09-14）**：有 remote 且 `origin/HEAD` 指向 `main` 時，預設 `"fresh"` **確實改從遠端預設分支分出**，worktree 拿不到單位分支上的 commit；本段原本的「未能測出」至此結案。也就是說，本測試觀察到的「跟隨當下 checkout」是 `"fresh"` 找不到遠端預設分支時退回本地 HEAD 的副作用，不是 `baseRef` 的真正語意。真實專案幾乎都有 remote，因此「多張票證共同基於同一個未 push 的單位分支」**必須**明確設定 `worktree.baseRef: "head"`，不能靠「不設定、指望它自動抓到當下分支」。
 
 ---
 
@@ -151,7 +151,7 @@ cc60e7e commit A
 
 **A（SendMessage 續談 worktree 子代理）**：【證實】用 `SendMessage` 續談已完成、仍指向同一 `agentId` 的 `isolation: worktree` 子代理，worktree 路徑、分支、未 commit 的變更（context）完整保留，不會像重新呼叫 Agent tool 那樣拿到全新 worktree；但完成通知只送回**主 session**、不會送回發起續談的子代理本身，這條路由規則需要一併寫進設計。
 
-**B（worktree 分岔基準）**：【證實，附條件：僅驗證於無 remote 的 local repo】worktree 分岔點跟隨「orchestrator 發起當下 checkout 的分支」而非固定分岔自 `main`；有 remote 時是否仍如此未測，但無論如何，agent-flow 若要求「同單位下多張票證共同基於同一未 push 分支」，都應明確設定 `worktree.baseRef: "head"` 以避免依賴此處未完全驗證的預設行為。
+**B（worktree 分岔基準）**：【證實，附條件：僅驗證於無 remote 的 local repo；有 remote 情境已由 `research/12` 補測結案——預設 `"fresh"` **會**改從遠端預設分支分出，故 `baseRef: "head"` 為必要設定】worktree 分岔點跟隨「orchestrator 發起當下 checkout 的分支」而非固定分岔自 `main`。有 remote 時**不**如此（`research/12`），故 agent-flow 一律明確設定 `worktree.baseRef: "head"`，不依賴預設行為。
 
 ---
 
