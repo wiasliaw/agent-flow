@@ -21,9 +21,10 @@ plugin 根目錄與 marketplace 根目錄。
 
 `context/README.md` — 權威鏈與各文件的效力狀態。三件最容易踩的事：
 
-1. **實作的唯一依據是 `context/spec/`**，不是 `context/DESIGN.md`。後者的設計本文
-   已被 2026-09-10 的 R1–R5 裁決推翻（八 phase／四承諾點／17 agent／internal
-   skill／`approved-artifact` ESC 全數作廢），只剩訪談逐字記錄 Q1–Q40 供追溯。
+1. **實作的唯一依據是 `context/spec/`**。`context/DESIGN.md` 的設計本文已於
+   2026-09-21 依 R14 改寫為與 `spec/` 對齊的設計總覽，矛盾時仍以 `spec/` 為準；
+   影響設計結構的裁決須同步回寫（`spec/README.md`「DESIGN.md 回寫記錄」）。
+   訪談逐字記錄 Q1–Q40 逐字保留，供追溯使用者原話。
 2. **`context/PROMPT.md` 定義工作方式本身**，任何階段都不得自行放寬。
 3. `context/research/` 的結論若與官方文件矛盾，以實驗為準。
 
