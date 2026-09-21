@@ -85,7 +85,7 @@ Explore 是流程起點，無前置 phase 依賴。
 
 ### 5. 承諾點
 
-依 spec/05 §3.1 通則。呈現：意圖摘要＋調查結論要點＋疑問清單（＋若有，第 3 輪未解決的待確認項目）。核准後：`gates.explore` 寫入，commit（`flow(<unit>): explore passed review`），`explore.md` 成為已核准產物；疑問清單非空 → Prototype，為空 → Spec（`orchestrate` 驅動時）。
+依 spec/05 §3.1 通則。呈現：意圖摘要＋調查結論要點＋疑問清單（＋若有，第 3 輪未解決的待確認項目）。核准後：`gates.explore` 寫入，commit（`flow(<unit>): explore passed review`），`explore.md` 成為已核准產物；疑問清單非空 → Prototype，為空 → Spec（`orchestrate` 驅動時——核准即結束 session，此路由由續接 session 執行，R13）。
 
 ### 6. 單獨呼叫時的行為
 
