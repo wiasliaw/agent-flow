@@ -1,9 +1,10 @@
 ---
 name: orchestrate
 description: >-
-  Drives all seven phases in sequence, stopping only at the three approval
-  gates and falling back automatically to the faulty phase when a review
-  finds its root cause upstream.
+  Drives the seven phases in sequence, pausing at the three approval gates
+  and ending the session after each approval — a fresh session resumes from
+  state.json — while falling back automatically to the faulty phase when a
+  review finds its root cause upstream.
 ---
 
 # Orchestrate
@@ -35,14 +36,14 @@ else:
 
 ## 2. Phase sequence and the three gates
 
-| # | Phase | Gate? | Auto-continue condition |
+| # | Phase | Gate? | Continuation |
 |---|---|---|---|
-| 1 | Explore | yes | after approval: open questions non-empty → Prototype; empty → Spec |
+| 1 | Explore | yes | approval ends the session; the resuming session routes: open questions non-empty → Prototype; empty → Prototype marked `skipped`, then Spec |
 | 2 | Prototype | no (optional, skippable) | loop passed → Spec |
-| 3 | Spec | yes | after approval → TDD |
+| 3 | Spec | yes | approval ends the session; the resuming session → TDD |
 | 4 | TDD | no | loop passed (test contract in force) → Build |
 | 5 | Build | no | all tickets `merged` → Review |
-| 6 | Review | yes | after approval → Wrap |
+| 6 | Review | yes | approval ends the session; the resuming session → Wrap |
 | 7 | Wrap | no (fully automatic) | done → flow ends |
 
 Each phase's own procedure is its phase skill
@@ -57,6 +58,16 @@ At each gate run `gate(phase)` with the presentation content:
 - **Review**: `review.md`.
 
 Approval commit message: `flow(<unit>): <phase> passed review`.
+
+After the approval is written and committed, **end the session**: `halt`
+presenting the approved gate, the next phase, and how to resume — start a
+fresh session and invoke `/agent-flow:orchestrate`, mentioning the unit
+name (or staying on the `flow/<unit-name>` branch); the fresh session
+picks up from `state.json` (section 1). Gates are the flow's fixed context
+breakpoints: the model cannot detect its remaining context window, so
+running several phases in one session risks auto-compaction. Phases
+without a gate auto-continue in the same session. This also applies to
+re-approvals during a fallback replay.
 
 ## 3. Dispatch
 

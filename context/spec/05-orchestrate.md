@@ -8,6 +8,7 @@
 - **Q20／Q15（承襲）**：總控 skill 名 `orchestrate`；驅動主 session 自身、不設 `context: fork`（Explore 的對話環節需要主 session 與使用者多輪即時往返）。
 - **Q2／Q3 語意承襲**：phase skill 各自獨立、不含接續邏輯；接續與承諾點停等是 orchestrate 層的責任；承諾點依 R2 改為三個。
 - **R12（2026-09-14，證據 research 12／13）**：ticket worktree 改由主 session 自行 `git worktree add` 建立，以分支名指定來源；`worktree.baseRef` 專案設定的檢查與徵同意代寫程序（原 Q23／research 08）**整段廢止**。
+- **R13（2026-09-21，證據 research 14）**：承諾點核准後**結束 session**，由使用者開新 session 依 §2.1 續接。動機：單一 session 連跑多 phase 會累積 skill 本文、glossary 重複載入與承諾點全文呈現，觸發 auto-compact；而 model 無任何官方記載機制可偵測剩餘 context（research 14），動態斷點不可行，固定斷點只能設在承諾點。無承諾點的 phase 間維持自動接續。
 - **Q21／Q32／Q34（承襲）**：主 session 唯一寫入 `state.json`；票證 frontmatter 為準；phase 迴圈通過即 commit、一票一 commit 不 squash。
 - **research 05 實驗二（承襲）**：Agent tool 對 plugin agent 用 `<plugin-name>:<agent-name>` 命名空間，本例 `agent-flow:worker`／`agent-flow:reviewer`。
 - **research 07 Test A／B（承襲）**：SendMessage 續談規則、worktree 分岔基準必要條件。
@@ -25,9 +26,10 @@
 ---
 name: orchestrate
 description: >-
-  Drives all seven phases in sequence, stopping only at the three approval
-  gates and falling back automatically to the faulty phase when a review
-  finds its root cause upstream.
+  Drives the seven phases in sequence, pausing at the three approval gates
+  and ending the session after each approval — a fresh session resumes from
+  state.json — while falling back automatically to the faulty phase when a
+  review finds its root cause upstream.
 ---
 ```
 
@@ -59,22 +61,24 @@ description: >-
 
 ### 3. Phase 接續與三個承諾點
 
-| 順序 | Phase | 承諾點？（R2） | 自動接續條件 |
+| 順序 | Phase | 承諾點？（R2） | 接續條件（R13） |
 |---|---|---|---|
-| 1 | Explore | 是 | 核准後：疑問清單非空 → Prototype；為空 → Spec |
+| 1 | Explore | 是 | 核准後結束 session；續接 session 判定：疑問清單非空 → Prototype；為空 → Prototype 標記 `skipped`、進 Spec |
 | 2 | Prototype | 否（optional，可整段略過） | 迴圈通過即自動進 Spec |
-| 3 | Spec | 是 | 核准後進 TDD |
+| 3 | Spec | 是 | 核准後結束 session；續接 session 進 TDD |
 | 4 | TDD | 否 | 迴圈通過（測試合約生效）即自動進 Build |
 | 5 | Build | 否 | 全部票證 `merged` 後自動進 Review |
-| 6 | Review | 是 | 核准後進 Wrap |
+| 6 | Review | 是 | 核准後結束 session；續接 session 進 Wrap |
 | 7 | Wrap | 否（全自動） | 完成即流程結束 |
+
+無承諾點的 phase 間在同一 session 自動接續；承諾點核准即 session 邊界（R13），跨界接續一律由新 session 依 §2.1 讀取 `state.json` 接手（含 §4.5 步驟 6 重走時經過的重新核准）。
 
 #### 3.1 承諾點的呈現行為（通則）
 
 1. 該 phase 品質迴圈已通過（`qualityLoops.<key>.status == "passed"`）。
 2. 讀取產物檔案向使用者呈現（Explore 呈現意圖摘要＋調查結論＋疑問清單；Spec 呈現規格全文；Review 呈現 `review.md`）。
 3. 明確提出核准請求，等待輸入。
-4. 核准：寫入 `gates.<phase>`，commit（`flow(<unit>): <phase> passed review`），進下一 phase。
+4. 核准：寫入 `gates.<phase>`，commit（`flow(<unit>): <phase> passed review`），然後**結束本 session**（R13）——`halt` 呈現：已核准的 gate、下一個 phase 為何、續接方式（開新 session 執行 `/agent-flow:orchestrate` 並提及單位名，或停在 `flow/<unit-name>` 分支上直接呼叫）。下一 phase 的判定與執行由續接 session 依 §2.1 接手。
 5. 不核准並提出修改意見：
    - 對產物的具體修改要求：視為使用者直接介入的一次額外退回（不計輪，INV-7），派回作者修訂後重新呈現。
    - 要求回到更早 phase 重做：視同**使用者發起的 waterfall 退回**，執行 §4.5 同一程序，FB 條目「原因」欄標記「使用者主動」。

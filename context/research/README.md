@@ -22,6 +22,7 @@ agent 在 /tmp 沙箱以便宜模型（Haiku）headless 實測（05–06）。�
 | `11-agent-namespace-and-builtins.md` | 查證（R11 前置）：plugin agent 命名空間的實際保護力——同名專案 agent 與 plugin agent **並存不覆蓋**（推翻 `spec/01` §2.4 的撞名風險敘述）；`disallowedTools` 在工具層真有強制力；內建 `general-purpose`／`Explore` 無法取代自訂 `agents/` 的兩項工具層保證 | /tmp 沙箱實驗（已清理） |
 | `12-worktree-baseref-with-remote.md` | 查證：有 remote 情境下 `worktree.baseRef` 是否必要——**是**【證實】。無設定時 worktree 分岔自遠端預設分支、拿不到單位分支 commit；設 `head` 後分岔自單位分支 tip。結案 research 07 Test B 的附條件與 08 的懸留 | /tmp 沙箱實驗（帶真實 remote，已清理） |
 | `13-manual-worktree.md` | 查證（R12 前置）：改由主 session 自建 worktree 是否可行——可行【證實】。平行子代理 `cd` 進指定 worktree 互不干擾、合併清理正常；擺放位置三案實測（`.git/` 底下 Write 被權限擋下不可用；採 `.agent-flow/.gitignore` 自帶 ignore，不碰專案設定）；連帶 INV-3 放寬 | /tmp 沙箱實驗（帶真實 remote，已清理） |
+| `14-context-window-detection.md` | 查證（R13 前置）：model 能否自行偵測剩餘 context——**不能**，官方無任何記載機制（低 context 警告未記載、`/context` 與 statusline 僅使用者可見、PreCompact hook 無法回饋 model、auto-compact 設定值不可讀）；動態斷點不可行，承諾點為唯一自然斷點 | 官方文件（claude-code-guide agent 代查，未做 /tmp 實驗） |
 
 ## 對設計影響最大的裁決
 

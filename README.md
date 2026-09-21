@@ -19,9 +19,11 @@ claude plugin install agent-flow@agent-flow
 /agent-flow:orchestrate add password reset to the auth service
 ```
 
-That drives all seven phases in sequence and stops only at the three gates. Each
-phase is also available on its own — `/agent-flow:explore`, `:prototype`, `:spec`,
-`:tdd`, `:build`, `:review`, `:wrap` — which run their own quality loop but never
+That drives the seven phases in sequence, pausing at the three gates for your
+approval. Each approved gate ends the session — run the same command in a fresh
+session and `state.json` picks up right where you left off. Each phase is also
+available on its own — `/agent-flow:explore`, `:prototype`, `:spec`, `:tdd`,
+`:build`, `:review`, `:wrap` — which run their own quality loop but never
 auto-continue to the next phase.
 
 ## The flow

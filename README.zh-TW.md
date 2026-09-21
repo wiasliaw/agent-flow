@@ -19,9 +19,11 @@ claude plugin install agent-flow@agent-flow
 /agent-flow:orchestrate 幫 auth service 加上密碼重設
 ```
 
-這會依序驅動七個 phase，只在三個承諾點停下來等你。每個 phase 也可以單獨呼叫——
-`/agent-flow:explore`、`:prototype`、`:spec`、`:tdd`、`:build`、`:review`、`:wrap`
-——它們各自跑自己的品質迴圈，但做完不會自動接續到下一個 phase。
+這會依序驅動七個 phase，在三個承諾點停下來等你核准。每次核准後 session 就此
+結束——開新 session 下同一道指令，`state.json` 會從你停下的地方接著跑。每個
+phase 也可以單獨呼叫——`/agent-flow:explore`、`:prototype`、`:spec`、`:tdd`、
+`:build`、`:review`、`:wrap`——它們各自跑自己的品質迴圈，但做完不會自動接續到
+下一個 phase。
 
 ## 流程
 

@@ -52,6 +52,14 @@
 | R7 | `spec/01` §2.5.1 的驗證指令與實際行為不符，怎麼修？ | 依 `research/10-validate-targets.md` 實測改寫：驗證程序從四道指令收斂為**兩道**（`.claude-plugin/plugin.json` ＋ `.claude-plugin/marketplace.json`）。三項實測依據：(a) `validate .` 在雙 manifest 下 marketplace 優先，`plugin.json` 永遠驗不到；(b) 指向 `plugin.json` 會**遞迴驗證所有 skill／agent**（推翻 research 05 實驗五「不遞迴」之結論），故 `./agents`／`./skills` 兩列刪除；(c) 輸出只列出有問題的元件，乾淨者靜默。另記載 `CLAUDE.md` 觸發的 `--strict` 誤報，裁定 CI 不得對 `plugin.json` 用 `--strict` |
 | R6 | 開發脈絡文件怎麼與 plugin 執行期內容分離？ | 收攏至**非隱藏**目錄 `context/`（`PROMPT.md`／`DESIGN.md`／`research/`／`spec/` 全部移入，新增 `context/README.md` 索引）；新增 `CLAUDE.md` 記載本 repo 的開發約定（擺放位置後由 R8 定為 `.claude/CLAUDE.md`）。不採 `.context/`——實測 ripgrep 與 shell glob 預設跳過 dot 目錄（`rg -l <needle> .` 找不到 `.context/` 下的檔案，需 `--hidden`），會使實作期每次都要讀的 `spec/` 退出預設搜尋。同時裁定 `DESIGN.md` **不重寫**，改在 `context/README.md` 標註效力狀態，實作一律以 `spec/` 為準 |
 
+## 裁決記錄（R13，2026-09-21）
+
+| 編號 | 題目 | 裁決 |
+|---|---|---|
+| R13 | orchestrate 單一 session 連跑多 phase（skill 本文、glossary 重複載入、承諾點全文呈現累積）觸發 auto-compact，斷點策略怎麼定？ | 依 `research/14`（官方文件查證）：model 無任何記載機制可偵測自己剩餘的 context——低 context 警告未記載、`/context` 與 statusline 僅使用者可見、PreCompact hook 能擋 compaction 但無法回饋 model、`autoCompactWindow` 設定值不可讀——**動態斷點不可行**。裁定**承諾點核准後結束 session**：寫入 gate、commit 後 `halt` 並提示開新 session 執行 `/agent-flow:orchestrate` 續接（§2.1 既有續接程序承接，含退回重走時的重新核准）；無承諾點的 phase 間維持同 session 自動接續。候選過的替代方案：核准後詢問使用者（多一次停等）、只做減量微調（不根治）、hook 解析 transcript 注入用量（未記載、需實驗）皆不採 |
+
+R13 影響 `05-orchestrate.md`（§已定、§1 frontmatter description、§3 接續表與 §3.1 步驟 4）、`06-explore.md` §5（接續敘述補註）、`references/glossary.md` `gate()` 步驟 (4) 措辭、`skills/orchestrate/SKILL.md`（frontmatter 與 §2），以及兩份 README 的「使用」節。其餘規格內容不變。
+
 R6 僅影響 `01-plugin-structure.md` §2.3 目錄樹（四份文件同時移動，彼此的相對引用仍然自洽）；R7 僅影響同檔 §2.5；R8 影響同檔 §2.1／§2.2（版本號）與 §2.3／§2.5；R9 影響同檔 §2.1／§2.2；R10 僅影響同檔 §2.3 目錄樹；R12 影響 `03-agents.md`（§已定 R5 註記、§3 派工參數與前置驗證）、`04-references.md`（§dispatch 內容規格 6–10、共用程序、INV-13）、`05-orchestrate.md`（§已定、§2.2 廢止、§2.3 建立單位、§4.7）、`10-build.md`（§已定、§3 前置檢查、§4 派工、§5 迴圈）、`11-review.md`（§3 修正派工），以及兩份 README（刪除「執行 Build 前」一節）。R11 影響 `01-plugin-structure.md` §2.4 的風險敘述，與 `03-agents.md` 的 Q36 承襲條目與通則（新增第 4 點「`name` 一律裸名」，原第 4／5 點順延為 5／6）；兩個 agent 定義檔本身不變。其餘規格內容不變。
 
 ## 舊裁決承襲對照
