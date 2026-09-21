@@ -52,11 +52,14 @@
 | R7 | `spec/01` §2.5.1 的驗證指令與實際行為不符，怎麼修？ | 依 `research/10-validate-targets.md` 實測改寫：驗證程序從四道指令收斂為**兩道**（`.claude-plugin/plugin.json` ＋ `.claude-plugin/marketplace.json`）。三項實測依據：(a) `validate .` 在雙 manifest 下 marketplace 優先，`plugin.json` 永遠驗不到；(b) 指向 `plugin.json` 會**遞迴驗證所有 skill／agent**（推翻 research 05 實驗五「不遞迴」之結論），故 `./agents`／`./skills` 兩列刪除；(c) 輸出只列出有問題的元件，乾淨者靜默。另記載 `CLAUDE.md` 觸發的 `--strict` 誤報，裁定 CI 不得對 `plugin.json` 用 `--strict` |
 | R6 | 開發脈絡文件怎麼與 plugin 執行期內容分離？ | 收攏至**非隱藏**目錄 `context/`（`PROMPT.md`／`DESIGN.md`／`research/`／`spec/` 全部移入，新增 `context/README.md` 索引）；新增 `CLAUDE.md` 記載本 repo 的開發約定（擺放位置後由 R8 定為 `.claude/CLAUDE.md`）。不採 `.context/`——實測 ripgrep 與 shell glob 預設跳過 dot 目錄（`rg -l <needle> .` 找不到 `.context/` 下的檔案，需 `--hidden`），會使實作期每次都要讀的 `spec/` 退出預設搜尋。同時裁定 `DESIGN.md` **不重寫**，改在 `context/README.md` 標註效力狀態，實作一律以 `spec/` 為準 |
 
-## 裁決記錄（R13，2026-09-21）
+## 裁決記錄（R13–R14，2026-09-21）
 
 | 編號 | 題目 | 裁決 |
 |---|---|---|
+| R14 | `DESIGN.md` 的設計本文仍是被 R1–R5 推翻的舊結構，是否維持 R6 的「不改寫」裁定？ | **推翻 R6 的「不改寫」部分**（R6 其餘內容——`context/` 收攏、CLAUDE.md——不受影響）：整體改寫「設計本文」十章使其與現行 `spec/`（R1–R13 裁決後）對齊；訪談逐字記錄 Q1–Q40 逐字保留不動。效力：`spec/` 仍為實作唯一依據，DESIGN.md 為對齊後的**設計總覽**，兩者矛盾時以 `spec/` 為準；「DESIGN.md 回寫記錄」清單重新啟用，往後影響設計結構的裁決須同步回寫 DESIGN.md |
 | R13 | orchestrate 單一 session 連跑多 phase（skill 本文、glossary 重複載入、承諾點全文呈現累積）觸發 auto-compact，斷點策略怎麼定？ | 依 `research/14`（官方文件查證）：model 無任何記載機制可偵測自己剩餘的 context——低 context 警告未記載、`/context` 與 statusline 僅使用者可見、PreCompact hook 能擋 compaction 但無法回饋 model、`autoCompactWindow` 設定值不可讀——**動態斷點不可行**。裁定**承諾點核准後結束 session**：寫入 gate、commit 後 `halt` 並提示開新 session 執行 `/agent-flow:orchestrate` 續接（§2.1 既有續接程序承接，含退回重走時的重新核准）；無承諾點的 phase 間維持同 session 自動接續。候選過的替代方案：核准後詢問使用者（多一次停等）、只做減量微調（不根治）、hook 解析 transcript 注入用量（未記載、需實驗）皆不採 |
+
+R14 影響 `context/DESIGN.md`（設計本文十章全數改寫，訪談記錄不動）、`context/README.md`（權威鏈、效力表與「DESIGN.md 為什麼失效」一節改為效力沿革）、`.claude/CLAUDE.md`（「動手前先讀」第 1 點）與本檔「DESIGN.md 回寫記錄」（清單重新啟用）；plugin 執行期內容與各規格本文不受影響。
 
 R13 影響 `05-orchestrate.md`（§已定、§1 frontmatter description、§3 接續表與 §3.1 步驟 4）、`06-explore.md` §5（接續敘述補註）、`references/glossary.md` `gate()` 步驟 (4) 措辭、`skills/orchestrate/SKILL.md`（frontmatter 與 §2），以及兩份 README 的「使用」節。其餘規格內容不變。
 
@@ -79,9 +82,10 @@ R6 僅影響 `01-plugin-structure.md` §2.3 目錄樹（四份文件同時移動
 
 ## DESIGN.md 回寫記錄
 
-（累積清單，規格對齊階段不修改 `DESIGN.md`。）
+（累積清單。R14 起：影響設計結構的裁決在此登記，並同步回寫 `DESIGN.md`。）
 
 1. **2026-09-05／S1、S4**（前版登記，內容已被 R3 進一步取代，回寫時直接以第 3 筆為準）。
 2. **2026-09-05／S4**（同上）。
 3. **2026-09-10／R1–R5／待更新章節：全文**——本次重構推翻 DESIGN.md 的核心結構（八 phase、四承諾點、17 角色、internal skill、`approved-artifact` ESC 路由）。回寫時應以 `spec/README.md` 裁決記錄 R1–R5 與各檔規格本文為準整體改寫 DESIGN.md 對應章節；前兩筆登記的局部回寫項目一併作廢。
 4. **2026-09-14／R6／回寫程序終止**——裁定不改寫 `DESIGN.md`。它自此為歷史文件：唯一仍具效力的部分是無法從 `spec/` 反推重建的訪談逐字記錄（Q1–Q40）；「設計本文」各章節一律以 `spec/` 為準。上列第 1–3 筆待回寫項目全部作廢，本清單不再累積。
+5. **2026-09-21／R14／回寫完成、清單重新啟用**——使用者裁決推翻第 4 筆的「不改寫」：設計本文十章已依現行 `spec/`（R1–R13）整體改寫完成，訪談逐字記錄 Q1–Q40 逐字保留。第 4 筆「本清單不再累積」失效；自此影響設計結構的裁決須在此登記並同步回寫 `DESIGN.md`，矛盾時以 `spec/` 為準。
